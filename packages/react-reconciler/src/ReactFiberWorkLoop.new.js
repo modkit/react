@@ -2172,7 +2172,7 @@ function commitBeforeMutationEffectsImpl(fiber: Fiber) {
       doesFiberContain(fiber, focusedInstanceHandle)
     ) {
       shouldFireAfterActiveInstanceBlur = true;
-      beforeActiveInstanceBlur();
+      beforeActiveInstanceBlur(fiber);
     }
   }
 
@@ -2206,7 +2206,7 @@ function commitBeforeMutationEffectsDeletions(deletions: Array<Fiber>) {
 
     if (doesFiberContain(fiber, ((focusedInstanceHandle: any): Fiber))) {
       shouldFireAfterActiveInstanceBlur = true;
-      beforeActiveInstanceBlur();
+      beforeActiveInstanceBlur(fiber);
     }
   }
 }
@@ -2874,6 +2874,11 @@ function commitDoubleInvokeEffectsInDEV(
   hasPassiveEffects: boolean,
 ) {
   if (__DEV__ && enableDoubleInvokingEffects) {
+    // Never double-invoke effects for legacy roots.
+    if ((fiber.mode & (BlockingMode | ConcurrentMode)) === NoMode) {
+      return;
+    }
+
     setCurrentDebugFiberInDEV(fiber);
     invokeEffectsInDev(fiber, MountLayoutDev, invokeLayoutEffectUnmountInDEV);
     if (hasPassiveEffects) {
@@ -2898,6 +2903,8 @@ function invokeEffectsInDev(
   invokeEffectFn: (fiber: Fiber) => void,
 ): void {
   if (__DEV__ && enableDoubleInvokingEffects) {
+    // We don't need to re-check for legacy roots here.
+    // This function will not be called within legacy roots.
     let fiber = firstChild;
     while (fiber !== null) {
       if (fiber.child !== null) {
