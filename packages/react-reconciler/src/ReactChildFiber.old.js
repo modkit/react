@@ -14,6 +14,7 @@ import type {LazyComponent} from 'react/src/ReactLazy';
 import type {Fiber} from './ReactInternalTypes';
 import type {Lanes} from './ReactFiberLane';
 
+import {enableHotModuleReload} from 'shared/ReactFeatureFlags';
 import getComponentName from 'shared/getComponentName';
 import {Placement, Deletion} from './ReactFiberFlags';
 import {
@@ -408,13 +409,13 @@ function ChildReconciler(shouldTrackSideEffects) {
       if (
         current.elementType === element.type ||
         // Keep this check inline so it only runs on the false path:
-        (__DEV__ ? isCompatibleFamilyForHotReloading(current, element) : false)
+        (enableHotModuleReload ? isCompatibleFamilyForHotReloading(current, element) : false)
       ) {
         // Move based on index
         const existing = useFiber(current, element.props);
         existing.ref = coerceRef(returnFiber, current, element);
         existing.return = returnFiber;
-        if (__DEV__) {
+        if (__DEV__ || enableHotModuleReload) {
           existing._debugSource = element._source;
           existing._debugOwner = element._owner;
         }
@@ -435,7 +436,7 @@ function ChildReconciler(shouldTrackSideEffects) {
           const existing = useFiber(current, element.props);
           existing.return = returnFiber;
           existing.type = type;
-          if (__DEV__) {
+          if (__DEV__ || enableHotModuleReload) {
             existing._debugSource = element._source;
             existing._debugOwner = element._owner;
           }
@@ -1150,7 +1151,7 @@ function ChildReconciler(shouldTrackSideEffects) {
               deleteRemainingChildren(returnFiber, child.sibling);
               const existing = useFiber(child, element.props.children);
               existing.return = returnFiber;
-              if (__DEV__) {
+              if (__DEV__ || enableHotModuleReload) {
                 existing._debugSource = element._source;
                 existing._debugOwner = element._owner;
               }
@@ -1175,7 +1176,7 @@ function ChildReconciler(shouldTrackSideEffects) {
                   const existing = useFiber(child, element.props);
                   existing.type = type;
                   existing.return = returnFiber;
-                  if (__DEV__) {
+                  if (__DEV__ || enableHotModuleReload) {
                     existing._debugSource = element._source;
                     existing._debugOwner = element._owner;
                   }
@@ -1189,7 +1190,7 @@ function ChildReconciler(shouldTrackSideEffects) {
             if (
               child.elementType === element.type ||
               // Keep this check inline so it only runs on the false path:
-              (__DEV__
+              (enableHotModuleReload
                 ? isCompatibleFamilyForHotReloading(child, element)
                 : false)
             ) {
@@ -1197,7 +1198,7 @@ function ChildReconciler(shouldTrackSideEffects) {
               const existing = useFiber(child, element.props);
               existing.ref = coerceRef(returnFiber, child, element);
               existing.return = returnFiber;
-              if (__DEV__) {
+              if (__DEV__ || enableHotModuleReload) {
                 existing._debugSource = element._source;
                 existing._debugOwner = element._owner;
               }
@@ -1376,7 +1377,7 @@ function ChildReconciler(shouldTrackSideEffects) {
       // we already threw above.
       switch (returnFiber.tag) {
         case ClassComponent: {
-          if (__DEV__) {
+          if (__DEV__ || enableHotModuleReload) {
             const instance = returnFiber.stateNode;
             if (instance.render._isMockFunction) {
               // We allow auto-mocks to proceed as if they're returning null.

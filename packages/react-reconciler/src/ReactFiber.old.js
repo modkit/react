@@ -6,7 +6,6 @@
  *
  * @flow
  */
-
 import type {ReactElement} from 'shared/ReactElementType';
 import type {
   ReactFragment,
@@ -58,6 +57,7 @@ import {
   LegacyHiddenComponent,
 } from './ReactWorkTags';
 import getComponentName from 'shared/getComponentName';
+import {enableHotModuleReload} from 'shared/ReactFeatureFlags';
 
 import {isDevToolsPresent} from './ReactFiberDevToolsHook.old';
 import {
@@ -334,6 +334,8 @@ export function createWorkInProgress(current: Fiber, pendingProps: any): Fiber {
 
   if (__DEV__) {
     workInProgress._debugNeedsRemount = current._debugNeedsRemount;
+  }
+  if(enableHotModuleReload){
     switch (workInProgress.tag) {
       case IndeterminateComponent:
       case FunctionComponent:
@@ -462,11 +464,11 @@ export function createFiberFromTypeAndProps(
   if (typeof type === 'function') {
     if (shouldConstruct(type)) {
       fiberTag = ClassComponent;
-      if (__DEV__) {
+      if (enableHotModuleReload) {
         resolvedType = resolveClassForHotReloading(resolvedType);
       }
     } else {
-      if (__DEV__) {
+      if (enableHotModuleReload) {
         resolvedType = resolveFunctionForHotReloading(resolvedType);
       }
     }
@@ -511,7 +513,7 @@ export function createFiberFromTypeAndProps(
               break getTag;
             case REACT_FORWARD_REF_TYPE:
               fiberTag = ForwardRef;
-              if (__DEV__) {
+              if (enableHotModuleReload) {
                 resolvedType = resolveForwardRefForHotReloading(resolvedType);
               }
               break getTag;
@@ -699,7 +701,7 @@ export function createFiberFromSuspenseList(
   key: null | string,
 ) {
   const fiber = createFiber(SuspenseListComponent, pendingProps, key, mode);
-  if (__DEV__) {
+  if (__DEV__ || enableHotModuleReload) {
     // TODO: The SuspenseListComponent fiber shouldn't have a type. It has a tag.
     // This needs to be fixed in getComponentName so that it relies on the tag
     // instead.
@@ -720,7 +722,7 @@ export function createFiberFromOffscreen(
   // TODO: The OffscreenComponent fiber shouldn't have a type. It has a tag.
   // This needs to be fixed in getComponentName so that it relies on the tag
   // instead.
-  if (__DEV__) {
+  if (__DEV__ || enableHotModuleReload) {
     fiber.type = REACT_OFFSCREEN_TYPE;
   }
   fiber.elementType = REACT_OFFSCREEN_TYPE;
@@ -738,7 +740,7 @@ export function createFiberFromLegacyHidden(
   // TODO: The LegacyHidden fiber shouldn't have a type. It has a tag.
   // This needs to be fixed in getComponentName so that it relies on the tag
   // instead.
-  if (__DEV__) {
+  if (__DEV__ || enableHotModuleReload) {
     fiber.type = REACT_LEGACY_HIDDEN_TYPE;
   }
   fiber.elementType = REACT_LEGACY_HIDDEN_TYPE;

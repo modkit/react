@@ -6,7 +6,6 @@
  *
  * @flow
  */
-
 import type {Fiber} from './ReactInternalTypes';
 import type {FiberRoot} from './ReactInternalTypes';
 import type {Lane, Lanes} from './ReactFiberLane';
@@ -15,6 +14,7 @@ import type {Update} from './ReactUpdateQueue.old';
 import type {Wakeable} from 'shared/ReactTypes';
 import type {SuspenseContext} from './ReactFiberSuspenseContext.old';
 
+import {enableHotModuleReload} from 'shared/ReactFeatureFlags';
 import getComponentName from 'shared/getComponentName';
 import {
   ClassComponent,
@@ -109,7 +109,7 @@ function createClassErrorUpdate(
   const inst = fiber.stateNode;
   if (inst !== null && typeof inst.componentDidCatch === 'function') {
     update.callback = function callback() {
-      if (__DEV__) {
+      if (enableHotModuleReload) {
         markFailedErrorBoundaryForHotReloading(fiber);
       }
       if (typeof getDerivedStateFromError !== 'function') {
@@ -143,7 +143,7 @@ function createClassErrorUpdate(
         }
       }
     };
-  } else if (__DEV__) {
+  } else if (enableHotModuleReload) {
     update.callback = () => {
       markFailedErrorBoundaryForHotReloading(fiber);
     };

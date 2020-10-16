@@ -6,7 +6,6 @@
  *
  * @flow
  */
-
 import type {Fiber, SuspenseHydrationCallbacks} from './ReactInternalTypes';
 import type {FiberRoot} from './ReactInternalTypes';
 import type {RootTag} from './ReactRootTags';
@@ -35,6 +34,7 @@ import {
 } from './ReactWorkTags';
 import getComponentName from 'shared/getComponentName';
 import invariant from 'shared/invariant';
+import {enableHotModuleReload} from 'shared/ReactFeatureFlags';
 import {enableSchedulingProfiler} from 'shared/ReactFeatureFlags';
 import ReactSharedInternals from 'shared/ReactSharedInternals';
 import {getPublicInstance} from './ReactFiberHostConfig';
@@ -253,7 +253,7 @@ export function updateContainer(
   parentComponent: ?React$Component<any, any>,
   callback: ?Function,
 ): Lane {
-  if (__DEV__) {
+  if (__DEV__ || enableHotModuleReload) {
     onScheduleRoot(container, element);
   }
   const current = container.current;
@@ -474,7 +474,7 @@ let overridePropsRenamePath = null;
 let scheduleUpdate = null;
 let setSuspenseHandler = null;
 
-if (__DEV__) {
+if (__DEV__ || enableHotModuleReload) {
   const copyWithDeleteImpl = (
     obj: Object | Array<any>,
     path: Array<string | number>,
@@ -731,10 +731,10 @@ export function injectIntoDevTools(devToolsConfig: DevToolsConfig): boolean {
     findFiberByHostInstance:
       findFiberByHostInstance || emptyFindFiberByHostInstance,
     // React Refresh
-    findHostInstancesForRefresh: __DEV__ ? findHostInstancesForRefresh : null,
-    scheduleRefresh: __DEV__ ? scheduleRefresh : null,
-    scheduleRoot: __DEV__ ? scheduleRoot : null,
-    setRefreshHandler: __DEV__ ? setRefreshHandler : null,
+    findHostInstancesForRefresh: enableHotModuleReload ? findHostInstancesForRefresh : null,
+    scheduleRefresh: enableHotModuleReload ? scheduleRefresh : null,
+    scheduleRoot: enableHotModuleReload ? scheduleRoot : null,
+    setRefreshHandler: enableHotModuleReload ? setRefreshHandler : null,
     // Enables DevTools to append owner stacks to error messages in DEV mode.
     getCurrentFiber: __DEV__ ? getCurrentFiberForDevTools : null,
   });

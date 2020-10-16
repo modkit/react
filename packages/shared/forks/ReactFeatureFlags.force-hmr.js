@@ -40,7 +40,7 @@ export const enableProfilerCommitHooks = false;
 export const enableSchedulerTracing = __PROFILE__;
 
 // Enable React Refresh (Hot Module Reload)
-export const enableHotModuleReload = __DEV__;
+export const enableHotModuleReload = true;
 
 // SSR experiments
 export const enableSuspenseServerRenderer = __EXPERIMENTAL__;

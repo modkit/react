@@ -6,7 +6,6 @@
  *
  * @flow
  */
-
 import type {ReactProviderType, ReactContext} from 'shared/ReactTypes';
 import type {BlockComponent} from 'react/src/ReactBlock';
 import type {LazyComponent as LazyComponentType} from 'react/src/ReactLazy';
@@ -203,6 +202,7 @@ import {
 import {unstable_wrap as Schedule_tracing_wrap} from 'scheduler/tracing';
 import {setWorkInProgressVersion} from './ReactMutableSource.old';
 
+import {enableHotModuleReload} from 'shared/ReactFeatureFlags';
 import {disableLogs, reenableLogs} from 'shared/ConsolePatchingDev';
 
 const ReactCurrentOwner = ReactSharedInternals.ReactCurrentOwner;
@@ -329,7 +329,7 @@ function updateForwardRef(
   // The rest is a fork of updateFunctionComponent
   let nextChildren;
   prepareToReadContext(workInProgress, renderLanes);
-  if (__DEV__) {
+  if (__DEV__ || enableHotModuleReload) {
     ReactCurrentOwner.current = workInProgress;
     setIsRendering(true);
     nextChildren = renderWithHooks(
@@ -398,7 +398,7 @@ function updateMemoComponent(
       Component.defaultProps === undefined
     ) {
       let resolvedType = type;
-      if (__DEV__) {
+      if (enableHotModuleReload) {
         resolvedType = resolveFunctionForHotReloading(type);
       }
       // If this is a plain function component without default props,
@@ -491,7 +491,7 @@ function updateSimpleMemoComponent(
   // hasn't yet mounted. This happens when the inner render suspends.
   // We'll need to figure out if this is fine or can cause issues.
 
-  if (__DEV__) {
+  if (__DEV__ || enableHotModuleReload) {
     if (workInProgress.type !== workInProgress.elementType) {
       // Lazy component props can't be validated in createElement
       // because they're only guaranteed to be resolved here.
@@ -527,7 +527,7 @@ function updateSimpleMemoComponent(
       shallowEqual(prevProps, nextProps) &&
       current.ref === workInProgress.ref &&
       // Prevent bailout if the implementation changed due to hot reload.
-      (__DEV__ ? workInProgress.type === current.type : true)
+      (enableHotModuleReload ? workInProgress.type === current.type : true)
     ) {
       didReceiveUpdate = false;
       if (!includesSomeLane(renderLanes, updateLanes)) {
@@ -730,7 +730,7 @@ function updateFunctionComponent(
 
   let nextChildren;
   prepareToReadContext(workInProgress, renderLanes);
-  if (__DEV__) {
+  if (__DEV__ || enableHotModuleReload) {
     ReactCurrentOwner.current = workInProgress;
     setIsRendering(true);
     nextChildren = renderWithHooks(
@@ -799,7 +799,7 @@ function updateBlock<Props, Data>(
   // The rest is a fork of updateFunctionComponent
   let nextChildren;
   prepareToReadContext(workInProgress, renderLanes);
-  if (__DEV__) {
+  if (__DEV__ || enableHotModuleReload) {
     ReactCurrentOwner.current = workInProgress;
     setIsRendering(true);
     nextChildren = renderWithHooks(
@@ -986,7 +986,7 @@ function finishClassComponent(
       stopProfilerTimerIfRunning(workInProgress);
     }
   } else {
-    if (__DEV__) {
+    if (__DEV__ || enableHotModuleReload) {
       setIsRendering(true);
       nextChildren = instance.render();
       if (
@@ -1197,6 +1197,8 @@ function mountLazyComponent(
     case FunctionComponent: {
       if (__DEV__) {
         validateFunctionComponentInDev(workInProgress, Component);
+      }
+      if(enableHotModuleReload){
         workInProgress.type = Component = resolveFunctionForHotReloading(
           Component,
         );
@@ -1211,7 +1213,7 @@ function mountLazyComponent(
       return child;
     }
     case ClassComponent: {
-      if (__DEV__) {
+      if (enableHotModuleReload) {
         workInProgress.type = Component = resolveClassForHotReloading(
           Component,
         );
@@ -1226,7 +1228,7 @@ function mountLazyComponent(
       return child;
     }
     case ForwardRef: {
-      if (__DEV__) {
+      if (enableHotModuleReload) {
         workInProgress.type = Component = resolveForwardRefForHotReloading(
           Component,
         );
@@ -1401,6 +1403,8 @@ function mountIndeterminateComponent(
     if (workInProgress.mode & StrictMode) {
       ReactStrictModeWarnings.recordLegacyContextWarning(workInProgress, null);
     }
+  }
+  if(__DEV__ || enableHotModuleReload){
 
     setIsRendering(true);
     ReactCurrentOwner.current = workInProgress;
@@ -1532,7 +1536,8 @@ function mountIndeterminateComponent(
           getComponentName(Component) || 'Unknown',
         );
       }
-
+    }
+    if (__DEV__ || enableHotModuleReload) {
       if (
         debugRenderPhaseSideEffectsForStrictMode &&
         workInProgress.mode & StrictMode
@@ -1695,7 +1700,7 @@ function updateSuspenseComponent(current, workInProgress, renderLanes) {
   const nextProps = workInProgress.pendingProps;
 
   // This is used by DevTools to force a boundary to suspend.
-  if (__DEV__) {
+  if (__DEV__ || enableHotModuleReload) {
     if (shouldSuspend(workInProgress)) {
       workInProgress.flags |= DidCapture;
     }
@@ -2912,12 +2917,12 @@ function updateContextConsumer(
   // reduce size and overhead. The separate object references context via
   // a property called "_context", which also gives us the ability to check
   // in DEV mode if this property exists or not and warn if it does not.
-  if (__DEV__) {
+  if (__DEV__ || enableHotModuleReload) {
     if ((context: any)._context === undefined) {
       // This may be because it's a Context (rather than a Consumer).
       // Or it may be because it's older React where they're the same thing.
       // We only want to warn if we're sure it's a new React.
-      if (context !== context.Consumer) {
+      if (__DEV__ && context !== context.Consumer) {
         if (!hasWarnedAboutUsingContextAsConsumer) {
           hasWarnedAboutUsingContextAsConsumer = true;
           console.error(
@@ -2947,7 +2952,7 @@ function updateContextConsumer(
   prepareToReadContext(workInProgress, renderLanes);
   const newValue = readContext(context, newProps.unstable_observedBits);
   let newChildren;
-  if (__DEV__) {
+  if (__DEV__ || enableHotModuleReload) {
     ReactCurrentOwner.current = workInProgress;
     setIsRendering(true);
     newChildren = render(newValue);
@@ -3022,7 +3027,7 @@ function remountFiber(
   oldWorkInProgress: Fiber,
   newWorkInProgress: Fiber,
 ): Fiber | null {
-  if (__DEV__) {
+  if (__DEV__ || enableHotModuleReload) {
     const returnFiber = oldWorkInProgress.return;
     if (returnFiber === null) {
       throw new Error('Cannot swap the root fiber.');
@@ -3087,7 +3092,7 @@ function beginWork(
 ): Fiber | null {
   const updateLanes = workInProgress.lanes;
 
-  if (__DEV__) {
+  if (__DEV__ || enableHotModuleReload) {
     if (workInProgress._debugNeedsRemount && current !== null) {
       // This will restart the begin phase with a new fiber.
       return remountFiber(
@@ -3113,7 +3118,7 @@ function beginWork(
       oldProps !== newProps ||
       hasLegacyContextChanged() ||
       // Force a re-render if the implementation changed due to hot reload:
-      (__DEV__ ? workInProgress.type !== current.type : false)
+      (enableHotModuleReload ? workInProgress.type !== current.type : false)
     ) {
       // If props or context changed, mark the fiber as having performed work.
       // This may be unset if the props are determined to be equal later (memo).

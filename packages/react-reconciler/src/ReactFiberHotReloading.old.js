@@ -6,12 +6,12 @@
  *
  * @flow
  */
-
 import type {ReactElement} from 'shared/ReactElementType';
 import type {Fiber} from './ReactInternalTypes';
 import type {FiberRoot} from './ReactInternalTypes';
 import type {Instance} from './ReactFiberHostConfig';
 import type {ReactNodeList} from 'shared/ReactTypes';
+import {enableHotModuleReload} from 'shared/ReactFeatureFlags';
 
 import {
   flushSync,
@@ -63,13 +63,13 @@ let resolveFamily: RefreshHandler | null = null;
 let failedBoundaries: WeakSet<Fiber> | null = null;
 
 export const setRefreshHandler = (handler: RefreshHandler | null): void => {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     resolveFamily = handler;
   }
 };
 
 export function resolveFunctionForHotReloading(type: any): any {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     if (resolveFamily === null) {
       // Hot reloading is disabled.
       return type;
@@ -91,7 +91,7 @@ export function resolveClassForHotReloading(type: any): any {
 }
 
 export function resolveForwardRefForHotReloading(type: any): any {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     if (resolveFamily === null) {
       // Hot reloading is disabled.
       return type;
@@ -132,7 +132,7 @@ export function isCompatibleFamilyForHotReloading(
   fiber: Fiber,
   element: ReactElement,
 ): boolean {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     if (resolveFamily === null) {
       // Hot reloading is disabled.
       return false;
@@ -210,7 +210,7 @@ export function isCompatibleFamilyForHotReloading(
 }
 
 export function markFailedErrorBoundaryForHotReloading(fiber: Fiber) {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     if (resolveFamily === null) {
       // Hot reloading is disabled.
       return;
@@ -229,7 +229,7 @@ export const scheduleRefresh: ScheduleRefresh = (
   root: FiberRoot,
   update: RefreshUpdate,
 ): void => {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     if (resolveFamily === null) {
       // Hot reloading is disabled.
       return;
@@ -250,7 +250,7 @@ export const scheduleRoot: ScheduleRoot = (
   root: FiberRoot,
   element: ReactNodeList,
 ): void => {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     if (root.context !== emptyContextObject) {
       // Super edge case: root has a legacy _renderSubtree context
       // but we don't know the parentComponent so we can't pass it.
@@ -269,7 +269,7 @@ function scheduleFibersWithFamiliesRecursively(
   updatedFamilies: Set<Family>,
   staleFamilies: Set<Family>,
 ) {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     const {alternate, child, sibling, tag, type} = fiber;
 
     let candidateType = null;
@@ -342,7 +342,7 @@ export const findHostInstancesForRefresh: FindHostInstancesForRefresh = (
   root: FiberRoot,
   families: Array<Family>,
 ): Set<Instance> => {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     const hostInstances = new Set();
     const types = new Set(families.map(family => family.current));
     findHostInstancesForMatchingFibersRecursively(
@@ -363,7 +363,7 @@ function findHostInstancesForMatchingFibersRecursively(
   types: Set<any>,
   hostInstances: Set<Instance>,
 ) {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     const {child, sibling, tag, type} = fiber;
 
     let candidateType = null;
@@ -417,7 +417,7 @@ function findHostInstancesForFiberShallowly(
   fiber: Fiber,
   hostInstances: Set<Instance>,
 ): void {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     const foundHostInstances = findChildHostInstancesForFiberShallowly(
       fiber,
       hostInstances,
@@ -451,7 +451,7 @@ function findChildHostInstancesForFiberShallowly(
   fiber: Fiber,
   hostInstances: Set<Instance>,
 ): boolean {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     let node: Fiber = fiber;
     let foundHostInstances = false;
     while (true) {

@@ -11,6 +11,7 @@ import typeof * as FeatureFlagsType from 'shared/ReactFeatureFlags';
 import typeof * as ExportsType from './ReactFeatureFlags.native-fb';
 
 // The rest of the flags are static for better dead code elimination.
+export const enableHotModuleReload = __DEV__;
 export const enableDebugTracing = false;
 export const enableSchedulingProfiler = false;
 export const enableProfilerTimer = __PROFILE__;
