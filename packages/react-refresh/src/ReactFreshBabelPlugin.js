@@ -11,7 +11,7 @@ export default function(babel, opts = {}) {
   if (typeof babel.env === 'function') {
     // Only available in Babel 7.
     const env = babel.env();
-    if (env !== 'development' && !opts.skipEnvCheck) {
+    if (env !== 'development' && !opts.enableReactRefresh && !opts.skipEnvCheck) {
       throw new Error(
         'React Refresh Babel transform should only be enabled in development environment. ' +
           'Instead, the environment is: "' +

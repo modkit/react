@@ -17,6 +17,7 @@ import type {
   FindHostInstancesForRefresh,
   SetRefreshHandler,
 } from 'react-reconciler/src/ReactFiberHotReloading';
+import {enableHotModuleReload} from 'shared/ReactFeatureFlags';
 import type {ReactNodeList} from 'shared/ReactTypes';
 
 import {REACT_MEMO_TYPE, REACT_FORWARD_REF_TYPE} from 'shared/ReactSymbols';
@@ -35,9 +36,10 @@ type RendererHelpers = {|
   setRefreshHandler: SetRefreshHandler,
 |};
 
-if (!__DEV__) {
+if (!enableHotModuleReload) {
   throw new Error(
-    'React Refresh runtime should not be included in the production bundle.',
+    'React Refresh runtime should not be included in the production bundle'+
+     ' unless "enableHotModuleReload" is set in ReactFeatureFlags.',
   );
 }
 
@@ -179,9 +181,9 @@ function cloneSet<T>(set: Set<T>): Set<T> {
 }
 
 export function performReactRefresh(): RefreshUpdate | null {
-  if (!__DEV__) {
+  if (!enableHotModuleReload) {
     throw new Error(
-      'Unexpected call to React Refresh in a production environment.',
+      'Unexpected call to React Refresh.',
     );
   }
   if (pendingUpdates.length === 0) {
@@ -294,7 +296,7 @@ export function performReactRefresh(): RefreshUpdate | null {
 }
 
 export function register(type: any, id: string): void {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     if (type === null) {
       return;
     }
@@ -344,7 +346,7 @@ export function setSignature(
   forceReset?: boolean = false,
   getCustomHooks?: () => Array<Function>,
 ): void {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     allSignaturesByType.set(type, {
       forceReset,
       ownKey: key,
@@ -361,7 +363,7 @@ export function setSignature(
 // This is lazily called during first render for a type.
 // It captures Hook list at that time so inline requires don't break comparisons.
 export function collectCustomHooksForSignature(type: any) {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     const signature = allSignaturesByType.get(type);
     if (signature !== undefined) {
       computeFullKey(signature);
@@ -374,7 +376,7 @@ export function collectCustomHooksForSignature(type: any) {
 }
 
 export function getFamilyByID(id: string): Family | void {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     return allFamiliesByID.get(id);
   } else {
     throw new Error(
@@ -384,7 +386,7 @@ export function getFamilyByID(id: string): Family | void {
 }
 
 export function getFamilyByType(type: any): Family | void {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     return allFamiliesByType.get(type);
   } else {
     throw new Error(
@@ -396,7 +398,7 @@ export function getFamilyByType(type: any): Family | void {
 export function findAffectedHostInstances(
   families: Array<Family>,
 ): Set<Instance> {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     const affectedInstances = new Set();
     mountedRoots.forEach(root => {
       const helpers = helpersByRoot.get(root);
@@ -422,7 +424,7 @@ export function findAffectedHostInstances(
 }
 
 export function injectIntoGlobalHook(globalObject: any): void {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     // For React Native, the global hook will be set up by require('react-devtools-core').
     // That code will run before us. So we need to monkeypatch functions on existing hook.
 
@@ -570,7 +572,7 @@ export function hasUnrecoverableErrors() {
 
 // Exposed for testing.
 export function _getMountedRootCount() {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     return mountedRoots.size;
   } else {
     throw new Error(
@@ -603,7 +605,7 @@ export function _getMountedRootCount() {
 // );
 type SignatureStatus = 'needsSignature' | 'needsCustomHooks' | 'resolved';
 export function createSignatureFunctionForTransform() {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     // We'll fill in the signature in two steps.
     // First, we'll know the signature itself. This happens outside the component.
     // Then, we'll know the references to custom Hooks. This happens inside the component.
@@ -648,7 +650,7 @@ export function createSignatureFunctionForTransform() {
 }
 
 export function isLikelyComponentType(type: any): boolean {
-  if (__DEV__) {
+  if (enableHotModuleReload) {
     switch (typeof type) {
       case 'function': {
         // First, deal with classes.

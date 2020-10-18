@@ -76,6 +76,7 @@ import {
   warnAboutDefaultPropsOnFunctionComponents,
   enableScopeAPI,
   enableBlocksAPI,
+  enableHotModuleReload,
 } from 'shared/ReactFeatureFlags';
 import invariant from 'shared/invariant';
 import shallowEqual from 'shared/shallowEqual';
@@ -202,7 +203,6 @@ import {
 import {unstable_wrap as Schedule_tracing_wrap} from 'scheduler/tracing';
 import {setWorkInProgressVersion} from './ReactMutableSource.old';
 
-import {enableHotModuleReload} from 'shared/ReactFeatureFlags';
 import {disableLogs, reenableLogs} from 'shared/ConsolePatchingDev';
 
 const ReactCurrentOwner = ReactSharedInternals.ReactCurrentOwner;
